@@ -15,7 +15,7 @@ Toda la infraestructura se crea con **Terraform** (`main.tf`).
 ## Qué hace `main.tf`
 
 1. Descarga la imagen `floci/floci` y levanta el contenedor `floci` en el puerto **4566**.
-2. Espera a que Floci responda.
+2. Espera a que Floci esté listo (estado *healthy* del contenedor).
 3. Configura el proveedor de AWS para que apunte a Floci (`http://localhost:4566`) con credenciales falsas.
 4. Crea el bucket `consultorio-ronconi`, lo hace público y lo configura como sitio web
    (`index.html` como página principal).
@@ -23,7 +23,16 @@ Toda la infraestructura se crea con **Terraform** (`main.tf`).
 
 ## Cómo ejecutarlo
 
-Requisitos: Docker Engine y Terraform.
+Requisitos:
+
+- **Docker** corriendo: Docker Engine (Linux) o Docker Desktop (Windows, Mac o Linux).
+- **Terraform** (o OpenTofu, reemplazando `terraform` por `tofu`).
+
+Funciona en Linux, Mac y Windows (PowerShell).
+
+> **Docker Desktop en Linux:** usa un socket distinto al estándar. Si `terraform apply` da un error
+> de conexión con Docker, ejecutar antes:
+> `export DOCKER_HOST=unix://$HOME/.docker/desktop/docker.sock`
 
 ```bash
 terraform init

@@ -82,16 +82,12 @@ resource "docker_container" "floci" {
     internal = 4566
     external = var.floci_port
   }
-}
 
-# Espera a que Floci responda antes de crear el bucket
-# (el contenedor tarda unos segundos en arrancar).
-resource "terraform_data" "esperar_floci" {
-  triggers_replace = [docker_container.floci.id]
-
-  provisioner "local-exec" {
-    command = "for i in $(seq 1 30); do curl -s -o /dev/null http://localhost:${var.floci_port} && exit 0; sleep 1; done; echo 'Floci no respondio' >&2; exit 1"
-  }
+  # Espera a que Floci esté "healthy" (listo para recibir pedidos) antes de
+  # seguir. Usa el healthcheck que trae la imagen, así funciona igual en
+  # Linux, Mac y Windows.
+  wait         = true
+  wait_timeout = 90
 
   lifecycle {
     precondition {
@@ -125,7 +121,7 @@ resource "aws_s3_bucket" "sitio" {
   bucket        = var.bucket_name
   force_destroy = true # permite "terraform destroy" aunque tenga archivos
 
-  depends_on = [terraform_data.esperar_floci]
+  depends_on = [docker_container.floci]
 }
 
 # Floci (igual que AWS) crea los buckets con "BucketOwnerEnforced", que
